@@ -5,7 +5,7 @@ SRC = philo.c utils.c
 OBJ = $(SRC:.c=.o)
 
 CC = cc -g -pthread
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -g3 -Wall -Wextra -Werror #-fsanitize=address
 
 all : $(NAME)
 
