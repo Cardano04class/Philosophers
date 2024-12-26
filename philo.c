@@ -6,7 +6,7 @@
 /*   By: mamir <mamir@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/18 23:17:21 by mamir             #+#    #+#             */
-/*   Updated: 2024/12/25 22:50:39 by mamir            ###   ########.fr       */
+/*   Updated: 2024/12/25 22:52:07 by mamir            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ int	ft_one_philo(t_philosophers_data *p_data)
 	pthread_mutex_unlock(&p_data->philo->monitor);
 	return (0);
 }
+
 
 void	eating(t_philosophers_data *p_data)
 {
