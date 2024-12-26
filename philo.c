@@ -6,7 +6,7 @@
 /*   By: mamir <mamir@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/18 23:17:21 by mamir             #+#    #+#             */
-/*   Updated: 2024/12/25 22:52:07 by mamir            ###   ########.fr       */
+/*   Updated: 2024/12/26 12:16:11 by mamir            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ void	ft_usleep(size_t time)
 	start = get_time();
 	while ((get_time() - start) < time)
 	{
-		usleep(500);
+		usleep(200);
 	}
 }
 
@@ -55,130 +55,36 @@ int	ft_one_philo(t_philosophers_data *p_data)
 	return (0);
 }
 
-
-void	eating(t_philosophers_data *p_data)
-{
-	size_t			time;
-	pthread_mutex_t	*first_take;
-	pthread_mutex_t	*second_take;
-
-	time = p_data->philo->x0;
-	first_take = p_data->left_fork;
-	second_take = p_data->right_fork;
-	if (p_data->philosophers_id % 2 != 0)
-	{
-		first_take = p_data->right_fork;
-		second_take = p_data->left_fork;
-	}
-	pthread_mutex_lock(first_take);
-	ft_print(p_data, time, "has taken a fork");
-	pthread_mutex_lock(second_take);
-	ft_print(p_data, time, "has taken a fork");
-	ft_usleep(p_data->philo->time_to_eat);
-	p_data->philosopher_last_eat = get_time();
-	p_data->eat_count++;
-	ft_print(p_data, time, "is eating");
-	pthread_mutex_unlock(first_take);
-	pthread_mutex_unlock(second_take);
-}
-
-void	sleeping(t_philosophers_data *p_data)
-{
-	size_t	time;
-
-	time = p_data->philo->x0;
-	ft_print(p_data, time, "is sleeping");
-	ft_usleep(p_data->philo->time_to_sleep);
-}
-
-void	thinking(t_philosophers_data *p_data)
-{
-	size_t	time;
-
-	time = p_data->philo->x0;
-	ft_print(p_data, time, "is thinking");
-}
 bool	ft_monitor_container(t_philosophers_data *p_data)
 {
 	int	i;
 
 	i = 0;
-	while (i < p_data->philo->number_of_philosophers)
+	if (p_data->philo->op == 1)
 	{
-		pthread_mutex_lock(&p_data->philo->monitor);
-		if ((p_data[i].eat_count < p_data->philo->philo_eat_count))
-		{
-			pthread_mutex_unlock(&p_data->philo->monitor);
-			return (false);
-		}
-		pthread_mutex_unlock(&p_data->philo->monitor);
-		i++;
-	}
-	p_data->philo->break_routine = 1;
-	return (true);
-}
-
-void	*ft_monitor(t_philosophers_data *p_data)
-{
-	int		i;
-	size_t	time;
-
-	i = 0;
-	time = p_data->philo->x0;
-	while (p_data->philo->break_routine == 0
-		&& p_data->philo->number_of_philosophers != 1)
-	{
-		i = 0;
 		while (i < p_data->philo->number_of_philosophers)
 		{
 			pthread_mutex_lock(&p_data->philo->monitor);
-			if (get_time()
-				- p_data[i].philosopher_last_eat > p_data->philo->time_to_die)
+			if ((p_data[i].eat_count < p_data->philo->philo_eat_count))
 			{
-				p_data->philo->break_routine = 1;
-				printf(RED "%zu %d is dead\n" RESET, get_time() - time,
-					p_data->philosophers_id);
 				pthread_mutex_unlock(&p_data->philo->monitor);
-				return (NULL);
+				return (false);
 			}
 			pthread_mutex_unlock(&p_data->philo->monitor);
 			i++;
 		}
-		if (ft_monitor_container(p_data) == true)
-			return (NULL);
+		p_data->philo->break_routine = 1;
+		return (true);
 	}
-	return (NULL);
-}
-
-void	*routine(void *arg)
-{
-	t_philosophers_data	*p_data;
-
-	p_data = (t_philosophers_data *)arg;
-	if (ft_one_philo(p_data) == 1)
-		return (NULL);
-	while (1)
-	{
-		pthread_mutex_lock(&p_data->philo->monitor);
-		if (p_data->philo->break_routine == 1)
-		{
-			pthread_mutex_unlock(&p_data->philo->monitor);
-			return (NULL);
-		}
-		pthread_mutex_unlock(&p_data->philo->monitor);
-		eating(p_data);
-		sleeping(p_data);
-		thinking(p_data);
-	}
-	return (NULL);
+	return (false);
 }
 
 int	main(int ac, char **av)
 {
 	t_philosophers_data	*p_data;
 	pthread_t			*threads;
-	int					n_philo;
 	pthread_t			monitor;
+	int					n_philo;
 	int					i;
 
 	n_philo = ft_atoi(av[1]);
